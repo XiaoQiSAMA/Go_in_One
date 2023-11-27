@@ -68,3 +68,28 @@ const (
 )
 ```
 
+### 1-2 结构语句
+
+#### if ··· else ···
+
+```go
+if err != nil {
+    ...
+} else {
+    ...
+}
+
+// contents, err为if内局部变量
+if contents, err := ioutil.ReadFile(filename); err != nil {
+    ...
+} else {
+    ...
+}
+```
+
+#### switch
+
+case内自动break,除非fallthrough
+
+### for
+
