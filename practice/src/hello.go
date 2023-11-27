@@ -47,4 +47,9 @@ func main() {
 	variableTypeDeduction()
 	variableShorter()
 	fmt.Println(aa, ss, bb)
+
+	euler()
+	triangle()
+	consts()
+	enums()
 }
