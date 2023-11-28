@@ -93,3 +93,95 @@ case内自动break,除非fallthrough
 
 ### for
 
+```go
+// 初始条件,退出条件,循环语句
+for ; n > 0; n /= 2 {
+    ...
+}
+// 仅有循环语句
+for scanner.Scan() {
+    ...
+}
+// 死循环
+for {
+    ...
+}
+```
+
+### function
+
+没有默认参数、可选参数
+
+函数的同类型参数可以一同定义,函数的返回值为复数时须严格遵守数量(可以为返回值取名)
+
+```go
+func div(a, b int) (q, r int) {
+    return a / b, a % b
+}
+```
+
+函数参数传递
+
+```go
+// 匿名函数参数传递 apply(op func(int, int) int, a, b int) int
+apply(
+    func(i1, i2 int) int {
+        return int(math.Pow(float64(i1), float64(i2)))
+    }, 3, 4,
+)
+```
+
+可变参数列表
+
+```go
+func sum(numbers ...int) int {
+    ...
+}
+```
+
+### 指针
+
+Go语言只有值传递,通过指针来实现引用传递
+
+```go
+// *a, *b 表示指向的值
+func swap(a, b *int) {
+    *b, *a = *a, *b
+}
+```
+
+### 数据结构
+
+#### 数组
+
+```go
+var arr1 [5]int
+arr2 := [3]int{1, 2, 3}
+arr3 := [...]int{2, 4, 6, 8, 10}
+
+var grid [4][5]int
+```
+
+range遍历
+
+```go
+for _, v := range arr3 {
+    fmt.Println(v)
+}
+```
+
+数组是值类型
+
+```go
+// cannot use arr2 (variable of type [3]int) as [5]int
+func printArr(arr [5]int) {
+    ...
+}
+
+// 数组的参数引用
+func printArrPointer(arr *[5]int) {
+    // 数组遍历
+    arr[0] = 100
+    ...
+}
+```
