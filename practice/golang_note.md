@@ -185,3 +185,68 @@ func printArrPointer(arr *[5]int) {
     ...
 }
 ```
+
+### 切片
+
+slice是原本array的一个视图(指针)
+
+![slice tips](images/slice.png)
+
+slice底层实现依赖ptr,len,cap. 其中cap决定了slice能往后扩展,而不能往前扩展
+
+![slice implement](images/slice_imply.png)
+
+slice能够根据cap往后取,索引不能超过len取值
+
+```go
+fmt.Println("s2[4]=", s2[4])     // index out of range
+fmt.Println("s2[4]=", s1[4:5])
+```
+
+#### append操作
+
+```go
+// 添加元素
+s3 := append(s2, 10)
+s4 := append(s3, 11)
+s5 := append(s4, 12)
+fmt.Println("s3, s4, s5 = ", s3, s4, s5)
+// s4, s5添加的元素会覆盖原有arr元素值
+// 超过arr的cap,系统则会分配新的更大cap的arr,把元素复制过去
+// 后续会由垃圾回收机制处理
+fmt.Println("arr = ", arr)
+
+// output:
+// slice of arr= [0 1 2 3 4 5 6 7]
+// s3, s4, s5 =  [5 6 10] [5 6 10 11] [5 6 10 11 12]
+// arr =  [0 1 2 3 4 5 6 10]
+```
+
+#### make创建
+
+```go
+s2 := make([]int, 16) // len = cap = 16
+s3 := make([]int, 10, 32) // len = 10, cap = 32
+```
+
+#### copy
+
+```go
+copy(s2, s1) // s1拷给s2
+```
+
+#### delete
+
+```go
+// 把s2中0~2和4~end的slice加一起,来删除第3个元素
+// s2[4:]...表示可变参数
+s2 = append(s2[:3], s2[4:]...)
+
+fmt.Println("Popping from front")
+front := s2[0]
+s2 = s2[1:]
+
+fmt.Println("Popping from back")
+tail := s2[len(s2)-1]
+s2 = s2[:len(s2)-1]
+```
