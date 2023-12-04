@@ -250,3 +250,60 @@ fmt.Println("Popping from back")
 tail := s2[len(s2)-1]
 s2 = s2[:len(s2)-1]
 ```
+
+### map
+
+· map[k]v  map[k1]map[k2]v
+
+map的key:
+
+1. map使用哈希表,必须可以比较相等
+2. 除了slice,map,function的内建类型都可以为key
+3. Struct类型不包含上述字段,也可作为key
+
+```go
+// 创建
+// hash map
+m := map[string]string{
+    "name":    "ccmouse",
+    "course":  "golang",
+    "site":    "imooc",
+    "quality": "notbad",
+}
+
+m2 := make(map[string]int) // m2 == empty map
+
+var m3 map[string]int // m3 == nil
+
+fmt.Println("Traversing map")
+for k, v := range m {
+    fmt.Println(k, v)
+}
+
+fmt.Println("Getting values")
+courseName := m["course"]
+
+if causeName, ok := m["cause"]; ok {
+    fmt.Println(causeName)
+} 
+
+fmt.Println("Deleting values")
+
+delete(m, "name")
+```
+
+### rune类型(Strings操作)
+
+rune相当于go的char
+
+1. 使用range遍历pos,rune对
+2. 使用utf8.RuneCountInString获得字符数量
+3. 使用len获得字节长度
+4. 使用[]byte获得字节
+
+#### 其他字符串操作
+
+1. Fileds, Split, Join
+2. Contains, Index
+3. ToLower, ToUpper
+4. Trim, TrimRight, TrimLeft
