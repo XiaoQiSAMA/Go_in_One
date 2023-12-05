@@ -139,7 +139,7 @@ func sum(numbers ...int) int {
 }
 ```
 
-### 指针
+### 1-3 指针
 
 Go语言只有值传递,通过指针来实现引用传递
 
@@ -150,7 +150,7 @@ func swap(a, b *int) {
 }
 ```
 
-### 数据结构
+### 1-4 数据结构
 
 #### 数组
 
@@ -186,7 +186,7 @@ func printArrPointer(arr *[5]int) {
 }
 ```
 
-### 切片
+### 1-5 切片
 
 slice是原本array的一个视图(指针)
 
@@ -307,3 +307,69 @@ rune相当于go的char
 2. Contains, Index
 3. ToLower, ToUpper
 4. Trim, TrimRight, TrimLeft
+
+## 2 面向对象
+
+### 2-1 struct
+
+Go语言仅支持封装,不支持继承和多态
+
+```go
+// 基础结构
+type treeNode struct {
+    val         int
+    left, right *treeNode
+}
+
+var root treeNode
+
+root = treeNode{val: 3}
+root.left = &treeNode{}
+root.right = &treeNode{5, nil, nil}
+root.right.left = new(treeNode)
+
+nodes := []treeNode{
+    {val: 3},
+    {},
+    {6, nil, nil},
+}
+```
+
+工厂函数createNode
+
+```go
+func createNode(val int) *treeNode {
+    // 返回局部变量的地址, 是合法的
+    return &treeNode{val: val}
+}
+
+root.right.left = createNode(2)
+```
+
+为结构体提供函数方法
+
+```go
+// 为treenode提供print函数
+func (node treeNode) print() {
+    fmt.Print(node.val)
+}
+root.print()
+
+// 传入指针来进行引用传递
+func (node *treeNode) setVal(val int) {
+    node.val = val
+}
+root.setVal(4)
+```
+
+### 2-2 指针接收者与值接收者
+
+* **要改变内容必须使用指针接收者**
+* **结构过大也要考虑使用指针接收者**
+* **一致性:如有指针接收者,最好都是指针接收者**
+
+### 2-3 封装
+
+* 名字一般使用CamelCase
+* 首字母大写:public
+* 首字母小写:private
