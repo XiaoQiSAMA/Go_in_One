@@ -20,9 +20,9 @@ b = 5
 
 // 并非全局变量，而是包内变量
 var (
-	aa = 3
-	ss = "kkk"
-	bb = true
+    aa = 3
+    ss = "kkk"
+    bb = true
 )
 ```
 
@@ -410,3 +410,17 @@ type MyTreeNode struct {
 var baseRoot *tree.Node
 baseRoot = &root
 ```
+
+## 3 Build
+
+### go mod
+
+go mod init rep_name 初始化
+
+go build ./... 自动在go.mod中biuld所有文件中import的依赖
+
+go mod tidy 清理旧版本
+
+go get 增加依赖
+
+go get [@v...] 增加指定版本的依赖
