@@ -373,3 +373,40 @@ root.setVal(4)
 * 名字一般使用CamelCase
 * 首字母大写:public
 * 首字母小写:private
+
+### 2-4 扩展
+
+```go
+// 1. 组合
+type MyTreeNode struct {
+    node *tree.Node
+}
+
+// 2. 别名
+// 将slice方法进行封装
+type Queue []int
+
+func (q *Queue) Push(v int) {
+    *q = append(*q, v)
+}
+
+func (q *Queue) Pop() int {
+    head := (*q)[0]
+    *q = (*q)[1:]
+    return head
+}
+
+func (q *Queue) IsEmpty() bool {
+    return len(*q) == 0
+}
+
+// 3. 内嵌(类似继承)
+type MyTreeNode struct {
+    *tree.Node
+}
+
+// Embedding与继承的区别:无法用父类指针指向子类
+// cannot use &root (value of type *MyTreeNode) as *tree.Node value in
+var baseRoot *tree.Node
+baseRoot = &root
+```
