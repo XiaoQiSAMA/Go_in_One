@@ -424,3 +424,21 @@ go mod tidy 清理旧版本
 go get 增加依赖
 
 go get [@v...] 增加指定版本的依赖
+
+## 4 工程化
+
+### 4-1 接口
+
+```go
+func getRetriever() retriever {
+    return infra.Retriever{}
+    // return testCode.Retriever{}
+}
+
+// 接口适用于不同类型retriever
+type retriever interface {
+    Get(string) string
+}
+
+var r retriever = getRetriever()
+```
