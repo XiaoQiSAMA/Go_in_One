@@ -442,3 +442,130 @@ type retriever interface {
 
 var r retriever = getRetriever()
 ```
+
+### duck typing
+
+download(使用者) ---> retrieve(实现者)
+
+***接口由使用者定义***
+
+```go
+// main.go
+type Retriever interface {
+    // 未实现Get方法,由使用者定义
+    Get(url string) string
+}
+
+// 使用者只需要使用,不需要实现
+func download(r Retriever) string {
+    return r.Get("http://www.imooc.com")
+}
+
+var r Retriever
+r = mock.Retriever{Contents: "This is a fake imooc.com"}
+r = real.Retriever{}
+fmt.Println(download(r))
+
+// mockretriever.go 具体的接口方法实现
+type Retriever struct {
+    Contents string
+}
+
+func (r Retriever) Get(url string) string {
+    return r.Contents
+}
+// realretriever.go 具体的接口方法实现
+type Retriever struct {
+    UserAgent string
+    TimeOut   time.Duration
+}
+
+func (r Retriever) Get(url string) string {
+    resp, err := http.Get(url)
+    if err != nil {
+        panic(err)
+    }
+
+    result, err := httputil.DumpResponse(
+        resp, true,
+    )
+
+    resp.Body.Close()
+
+    if err != nil {
+        panic(err)
+    }
+
+    return string(result)
+}
+```
+
+### 接口的值类型
+
+```go
+/*
+Retriever r:
+    Type             value
+    *real.Retriever  &{Mozilla/5.0 1m0s}
+*/
+// Type assertion: 取出r中的值
+realRetriever := r.(*real.Retriever)
+fmt.Println(realRetriever.UserAgent)
+```
+
+* 接口变量自带指针(指向实现者,即实现的方法)
+* 接口变量同样采用值传递,几乎不需要使用接口的指针(接口中方法的实现一般是值传递实现,也可以使用指针实现)
+* 指针接收者实现只能以指针方式使用;值接收者都可(如果使用指针传递实现接口中的方法,那么接口变量需要接收该方法的地址;而值传递实现的方法,两种类型都能接收) 
+
+***interface{}可表示任意类型***
+
+```go
+type Queue []interface{}
+
+func (q *Queue) Push(v interface{}) {
+    // 限制值为int,否则运行时出错
+    *q = append(*q, v.(int))  
+}
+
+// 限制传入时的值为int,否则编译出错
+func (q *Queue) Push(v int) {
+    *q = append(*q, v)  
+}
+```
+
+### 接口的组合
+
+组合的接口,实现者只需关注各自接口的实现方法;使用者则只需准确使用需要的接口变量中的方法(创建实现了对应方法(Get&Post)的接口变量(RetrieverPoster))
+
+```go
+// 组合Retriever与Poster
+type RetrieverPoster interface {
+    Retriever
+    Poster
+}
+
+// 组合方法的使用
+func session(s RetrieverPoster) string {
+    s.Post(url, map[string]string{
+        "contents": "another faked imooc.com",
+    })
+    return s.Get(url)
+}
+
+// 在mock中实现了Post与Get方法
+s := &mock.Retriever{Contents: "This is a fake imooc.com"}
+fmt.Println(session(s))
+```
+
+***特殊接口***
+
+```go
+// 相当于toString()操作,在接口中加入可以帮助格式化接口变量的输出
+func (r *Retriever) String() string {
+    return fmt.Sprintf(
+        "Retriever: {Contents=%s}", r.Contents,
+    )
+}
+
+// Reader/Writer接口
+```
