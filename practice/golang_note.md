@@ -569,3 +569,106 @@ func (r *Retriever) String() string {
 
 // Reader/Writer接口
 ```
+
+## 函数式编程
+
+将func闭包进adder
+
+```go
+func adder() func(i int) int {
+    sum := 0
+    return func(v int) int {
+        sum += v
+        return sum
+    }
+}
+```
+
+### 函数接口
+
+```go
+// 给函数写接口
+type intGen func() int
+
+// 实现函数接口Read方法
+func (g intGen) Read(p []byte) (n int, err error) {
+    next := g()
+    if next > 10000 {
+        return 0, io.EOF
+    }
+    s := fmt.Sprintf("%d\n", next)
+    return strings.NewReader(s).Read(p)
+}
+```
+
+### 闭包的应用
+
+二叉树的遍历
+
+```go
+func (node *Node) Traverse() {
+    node.TraverseFunc(func(n *Node) {
+        fmt.Printf("%d ", node.Val)
+    })
+    fmt.Println()
+}
+
+func (node *Node) TraverseFunc(f func(*Node)) {
+    if node == nil {
+        return
+    }
+
+    node.TraverseFunc(f)
+    f(node)
+    node.TraverseFunc(f)
+}
+```
+
+统计结点数量
+
+```go
+// 统计节点数量
+nodeCount := 0
+root.TraverseFunc(func(node *Node) {
+    nodeCount++
+})
+fmt.Println("Node Count: ", nodeCount)
+```
+
+通过TraverseFunc中对函数f的匿名实现来改变函数用途
+
+### defer
+
+defer的语句将会在程序结束时运行
+
+```go
+func tryDefer() {
+    // defer将语句存入栈中
+    defer fmt.Println(1)
+    defer fmt.Println(2)
+    fmt.Println(3)
+    panic("error occurred!")
+    fmt.Println(4)
+}
+```
+
+### 错误处理
+
+```go
+file, err := os.OpenFile(
+    filename, os.O_EXCL|os.O_CREATE, 0666,
+)
+// // 自定义err
+// err = errors.New("This is a custom error!")
+if err != nil {
+    if pathError, ok := err.(*os.PathError); !ok {
+        panic(err)
+    } else {
+        fmt.Printf("%s, %s, %s\n",
+            pathError.Op,
+            pathError.Path,
+            pathError.Err)
+    }
+    return
+}
+```
