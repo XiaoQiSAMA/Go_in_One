@@ -672,3 +672,39 @@ if err != nil {
     return
 }
 ```
+
+用errWrapper进行封装,让handler实现自己的逻辑不用关心错误处理
+
+```go
+// 业务逻辑函数
+type appHandler func(writer http.ResponseWriter,
+    request *http.Request) error
+
+// 针对appHandler函数,return函数做错误处理
+func errWrapper(handler appHandler) func(
+    http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // 接收业务逻辑中的err
+        err := handler(w, r)
+        if err != nil {
+            log.Printf("Error handling request: %s",
+                err.Error())
+            code := http.StatusOK
+            switch {
+            case os.IsNotExist(err):
+                code = http.StatusNotFound
+            case os.IsPermission(err):
+                code = http.StatusForbidden
+            default:
+                code = http.StatusInternalServerError
+            }
+            http.Error(w,
+                http.StatusText(code), code)
+        }
+    }
+}
+```
+
+* defer + panic + recover
+* Type Assertion
+* 函数式编程的应用
