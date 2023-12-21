@@ -708,3 +708,84 @@ func errWrapper(handler appHandler) func(
 * defer + panic + recover
 * Type Assertion
 * 函数式编程的应用
+
+## 并发编程
+
+### 协程Coroutine
+
+* 轻量级"线程"
+* 非抢占式多任务处理,由协程主动交出控制权
+* 编译器/解释器/虚拟机层面的多任务
+* 多个协程可能在一个或多个线程上运行
+
+```go
+var a [10]int
+for i := 0; i < 10; i++ {
+    // 协程函数
+    go func(i int) {
+        for {
+            // fmt.Printf("Hello from goroutine %d\n", i)
+            a[i]++
+        }
+    }(i)
+}
+```
+
+![协程调度](images/goroutine.png)
+
+### goroutine
+
+* 任何函数只需加上go就能送给调度器运行
+* 不需要在定义时区分是否是异步函数
+* 调度器在合适的点进行切换
+* 使用-race来检测数据访问冲突
+
+### channel
+
+***Channel as first-class citizen***
+
+```go
+// 创建的channel只能发数据
+func createWorker(id int) chan<- int {
+    c := make(chan int)
+    go func() {
+        for {
+            fmt.Printf("Worker %d received %c\n",
+                id, <-c)
+        }
+    }()
+    return c
+}
+```
+
+***Buffered channel***
+
+```go
+c := make(chan int, 3)
+go worker(0, c)
+```
+
+***Channel close and range***
+
+channel关闭后,其中常用range来收
+
+```go
+// 1. 协程工作函数
+func worker(id int, c chan int) {
+    // range c来截停
+    for n := range c {
+        fmt.Printf("Worker %d received %d\n",
+            id, n)
+    }
+}
+
+c := make(chan int)
+go worker(0, c)
+c <- 'a'
+c <- 'b'
+c <- 'c'
+c <- 'd'
+close(c)
+```
+
+***$\color{red}{不要用共享内存来通信;通过通信来共享内存}$***
