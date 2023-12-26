@@ -789,3 +789,37 @@ close(c)
 ```
 
 ***$\color{red}{不要用共享内存来通信;通过通信来共享内存}$***
+
+### sync
+
+```go
+type worker struct {
+    in chan int
+    // done chan bool
+    done func()
+}
+// 1. 协程工作函数
+func doWork(id int, w worker) {
+    for n := range w.in {
+        fmt.Printf("Worker %d received %c\n",
+            id, n)
+        // 异步操作
+        w.done()
+    }
+}
+
+// 异步信号
+var wg sync.WaitGroup
+
+// 异步worker协程
+wg.Add(20)
+w := worker{
+    in: make(chan int),
+    // done: make(chan bool),
+    done: func() {
+        wg.Done()
+    },
+}
+// 等待worker协程结束
+wg.Wait()
+```
