@@ -26,6 +26,18 @@ func (node *Node) TraverseFunc(f func(*Node)) {
 	node.TraverseFunc(f)
 }
 
+func (node *Node) TraverseWithChannel() chan *Node {
+	out := make(chan *Node)
+	go func() {
+		// 将node的信息n传给channel out,类似于yeild
+		node.TraverseFunc(func(n *Node) {
+			out <- n
+		})
+		close(out)
+	}()
+	return out
+}
+
 func main() {
 	var root Node
 
@@ -38,4 +50,14 @@ func main() {
 		nodeCount++
 	})
 	fmt.Println("Node Count: ", nodeCount)
+
+	// 统计maxVal
+	c := root.TraverseWithChannel()
+	maxNode := 0
+	for node := range c {
+		if node.Val > maxNode {
+			maxNode = node.Val
+		}
+	}
+	fmt.Println("Max node value: ", maxNode)
 }
