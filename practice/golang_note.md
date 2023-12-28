@@ -790,7 +790,7 @@ close(c)
 
 ***$\color{red}{不要用共享内存来通信;通过通信来共享内存}$***
 
-### sync
+### 并发
 
 ```go
 type worker struct {
@@ -823,3 +823,140 @@ w := worker{
 // 等待worker协程结束
 wg.Wait()
 ```
+
+***select***
+
+```go
+for {
+    // 只能用于通道操作
+    select {
+    case n = <-c1:
+        ...
+    case n = <-c2:
+        ...
+    
+    // 非阻塞式
+    default:
+        ...
+    }
+}
+```
+
+如果有多个 case 都可以运行,select 会随机公平地选出一个执行,其他不会执行。
+否则:
+
+* 如果有 default 子句,则执行该语句
+* 如果没有 default 子句,select 将阻塞,直到某个通道可以运行；Go 不会重新对 channel 或值进行求值
+
+***传统同步机制***
+
+* WaitGroup
+* Mutex
+* Cond
+
+### 并发编程模式
+
+* 生成器
+
+    ```go
+    func msgGen(name string) <-chan string {
+        c := make(chan string)
+        go func() {
+            for {
+                ...
+            }
+        }()
+        return c
+    }
+    ```
+
+* 服务/任务
+* 同时等待多个服务: 两种方法
+
+    ```go
+    // 接收两个channel的数据,依次输出到新的channel
+    func fanIn(chs ...<-chan string) <-chan string {
+        c := make(chan string)
+        for _, ch := range chs {
+            go func(in <-chan string) {
+                for {
+                    c <- <-in
+                }
+            }(ch) // 传入ch的复制,防止go routine冲突
+        }
+        return c
+    }
+
+    // select实现,仅需一个go routine
+    func fanInBySelect(c1, c2 <-chan string) <-chan string {
+        c := make(chan string)
+        go func() {
+            for {
+                select {
+                case m := <-c1:
+                    c <- m
+                case m := <-c2:
+                    c <- m
+                }
+            }
+        }()
+        return c
+    }
+    ```
+
+### 并发任务控制
+
+* 非阻塞等待
+
+    ```go
+    // 非阻塞等待
+    func nonBlockingWait(c <-chan string) (string, bool) {
+        select {
+        case m := <-c:
+            return m, true
+        default:
+            return "", false
+        }
+    }
+    ```
+
+* 超时机制
+
+    ```go
+    // 超时等待
+    func timeoutWait(c <-chan string, timeout time.Duration) (string, bool) {
+        select {
+        case m := <-c:
+            return m, true
+        case <-time.After(timeout):
+            return "", false
+        }
+    }
+    ```
+
+* 任务中断/退出
+* 优雅退出
+
+    ```go
+    // 主动中断任务
+    func msgGenInterrup(name string, done chan struct{}) <-chan string {
+        c := make(chan string)
+        go func() {
+            i := 0
+            for {
+                select {
+                case <-time.After(time.Duration(rand.Intn(5000)) * time.Millisecond):
+                    c <- fmt.Sprintf("service %s: message %d", name, i)
+                case <-done:
+                    fmt.Println("cleaning up")
+                    time.Sleep(2 * time.Second) // do cleaning 
+                    fmt.Println("cleaning done")
+                    done <- struct{}{}  // 优雅退出:告诉main已经clearning done
+                    return
+                }
+                i++
+            }
+        }()
+        return c
+    }
+    ```
